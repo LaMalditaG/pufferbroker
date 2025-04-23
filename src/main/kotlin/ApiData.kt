@@ -1,10 +1,10 @@
-﻿package io.github.thebestandgreatest
+﻿package io.github.lamalditag
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Data class to hold the json response from the crafty controller api
+ * Data class to hold the json response from the pufferpanel controller api
  */
 
 
@@ -43,7 +43,7 @@ data class ServerData(
 	@SerialName("crashed") var crashed: Boolean? = null,
 	@SerialName("importing") var importing: Boolean? = null,
 
-	)
+)
 
 @Serializable
 data class ServerId(
@@ -69,4 +69,9 @@ data class ServerId(
 	@SerialName("ignored_exits") var ignoredExits: String? = null,
 	@SerialName("count_players") var countPlayers: Boolean? = null
 
+)
+
+@Serializable
+data class ServerRunning(
+	@SerialName("running") var running: Boolean? = null
 )

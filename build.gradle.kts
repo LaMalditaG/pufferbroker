@@ -8,7 +8,7 @@ plugins {
 	kotlin("plugin.serialization") version "2.1.10"
 }
 
-group = "io.github.thebestandgreatest"
+group = "io.github.lamalditag"
 version = "0.1.0"
 
 repositories {
@@ -17,14 +17,16 @@ repositories {
 		name = "Impulse"
 		url = uri("https://maven.pkg.github.com/Arson-Club/Impulse")
 		credentials {
-			username = project.findProperty("gpr.user").toString()
-			password = project.findProperty("gpr.token").toString()
+			username = project.findProperty("gpr.user").toString() ?: System.getenv("USERNAME")
+			password = project.findProperty("gpr.token").toString() ?: System.getenv("TOKEN")
 		}
 	}
 }
 
-val ktorVersion: String by project
-val logbackVersion: String by project
+// val ktorVersion: String by project
+// val logbackVersion: String by project
+val ktorVersion = "3.1.2"
+val logbackVersion = "1.5.18"
 
 dependencies {
 	implementation("club.arson.impulse:api:v0.3.1")
@@ -47,10 +49,10 @@ kotlin {
 }
 
 application {
-	val name = "io.github.thebestandgreatest"
+	val name = "io.github.lamalditag"
 	mainClass.set(name)
 }
 
 tasks.withType<ShadowJar> {
-	description = "Crafty Controller broker for Impulse."
+	description = "PufferPanel broker for Impulse."
 }

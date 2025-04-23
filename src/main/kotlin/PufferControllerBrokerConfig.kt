@@ -1,14 +1,14 @@
-﻿package io.github.thebestandgreatest
+﻿package io.github.lamalditag
 
 import club.arson.impulse.api.config.BrokerConfig
 import kotlinx.serialization.Serializable
 
-@BrokerConfig("crafty")
+@BrokerConfig("puffer")
 @Serializable
-data class CraftyControllerBrokerConfig(
+data class PufferControllerBrokerConfig(
 	var address: String? = null,
 	var serverID: String,
 	var token: String,
-	var craftyAddress: String = "https://localhost:8443",
+	var pufferApiAddress: String = "https://localhost:8080",
 	var insecureMode: Boolean = false
 )

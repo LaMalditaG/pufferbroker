@@ -1,4 +1,4 @@
-﻿package io.github.thebestandgreatest
+﻿package io.github.lamalditag
 
 import club.arson.impulse.api.config.ServerConfig
 import club.arson.impulse.api.server.Broker
@@ -17,20 +17,20 @@ import java.net.InetSocketAddress
 import java.net.SocketException
 
 /**
- * This broker is designed to send api requests to a crafty controller instance
+ * This broker is designed to send api requests to a pufferpanel controller instance
  *
- * @property ServerConfig Server config to create a crafty broker for
+ * @property ServerConfig Server config to create a pufferpanel broker for
  * @property logger Logger ref for log messages
  */
-class CraftyControllerBroker(serverConfig: ServerConfig, private val logger: Logger? = null) : Broker {
-	private var craftyConfig: CraftyControllerBrokerConfig
+class PufferControllerBroker(serverConfig: ServerConfig, private val logger: Logger? = null) : Broker {
+	private var pufferConfig: PufferControllerBrokerConfig
 	private val client: HttpClient
 
 	/**
 	 * Creates a new instance and sets up the broker based on the config
 	 */
 	init {
-		craftyConfig = serverConfig.config as CraftyControllerBrokerConfig
+		pufferConfig = serverConfig.config as PufferControllerBrokerConfig
 		client = HttpClient(CIO) {
 			engine {
 			}
@@ -45,11 +45,11 @@ class CraftyControllerBroker(serverConfig: ServerConfig, private val logger: Log
 	}
 
 	override fun address(): Result<InetSocketAddress> {
-		if (craftyConfig.address == null) {
+		if (pufferConfig.address == null) {
 			return Result.failure(IllegalArgumentException("No address specified in config"))
 		}
-		val port = craftyConfig.address?.split(":")?.getOrNull(1)?.toIntOrNull() ?: 25565
-		return runCatching { InetSocketAddress(craftyConfig.address, port) }
+		val port = pufferConfig.address?.split(":")?.getOrNull(1)?.toIntOrNull() ?: 25565
+		return runCatching { InetSocketAddress(pufferConfig.address, port) }
 	}
 
 	/**
@@ -59,17 +59,17 @@ class CraftyControllerBroker(serverConfig: ServerConfig, private val logger: Log
 	 * @return Result of a success or failure
 	 */
 	override fun reconcile(config: ServerConfig): Result<Runnable?> {
-		if (config.type != "crafty") {
+		if (config.type != "puffer") {
 			logger?.error("config type error")
-			return Result.failure(IllegalArgumentException("Expected CraftyControllerConfig and got ${config.type}"))
+			return Result.failure(IllegalArgumentException("Expected PufferControllerConfig and got ${config.type}"))
 		}
 
-		val newConfig = config.config as CraftyControllerBrokerConfig
-		if (newConfig != craftyConfig) { // if the config changed
-			craftyConfig = newConfig
+		val newConfig = config.config as PufferControllerBrokerConfig
+		if (newConfig != pufferConfig) { // if the config changed
+			pufferConfig = newConfig
 			return Result.success(null)
 		} else { // if the config didn't change
-			craftyConfig = newConfig
+			pufferConfig = newConfig
 			return Result.success(null)
 		}
 	}
@@ -112,7 +112,7 @@ class CraftyControllerBroker(serverConfig: ServerConfig, private val logger: Log
 			return Result.success(Unit)
 		}
 		logger?.error("Unable to send delete request! Error: ${response.errorData}")
-		return Result.failure(Throwable("ERROR! Unable to delete server: ${craftyConfig.serverID}, Error message: ${response.error}"))
+		return Result.failure(Throwable("ERROR! Unable to delete server: ${pufferConfig.serverID}, Error message: ${response.error}"))
 	}
 
 
@@ -129,7 +129,7 @@ class CraftyControllerBroker(serverConfig: ServerConfig, private val logger: Log
 			return Result.success(Unit)
 		}
 		logger?.error("Unable to send start request! Error: ${response.errorData}")
-		return Result.failure(Throwable("ERROR! Unable to start server: ${craftyConfig.serverID}, Error message: ${response.error}"))
+		return Result.failure(Throwable("ERROR! Unable to start server: ${pufferConfig.serverID}, Error message: ${response.error}"))
 	}
 
 
@@ -146,11 +146,11 @@ class CraftyControllerBroker(serverConfig: ServerConfig, private val logger: Log
 			return Result.success(Unit)
 		}
 		logger?.error("Unable to send stop request! Error: ${response.errorData}")
-		return Result.failure(Throwable("ERROR! Unable to stop server: ${craftyConfig.serverID}, Error message: ${response.error}"))
+		return Result.failure(Throwable("ERROR! Unable to stop server: ${pufferConfig.serverID}, Error message: ${response.error}"))
 	}
 
 	/**
-	 * Sends an api request to the crafty controller api
+	 * Sends an api request to the pufferpanel controller api
 	 *
 	 * @param type type of the request to send to the server
 	 * @return an ApiData object representing the received data
@@ -159,14 +159,14 @@ class CraftyControllerBroker(serverConfig: ServerConfig, private val logger: Log
 		logger?.debug("Trying RequestType: {}", type)
 		var response: ApiData
 		try {
-			response = client.request(craftyConfig.craftyAddress) {
+			response = client.request(pufferConfig.pufferApiAddress) {
 				method = type.method
 				url {
-					appendPathSegments("api/v2/servers", craftyConfig.serverID, type.request)
+					appendPathSegments("daemon/server", pufferConfig.serverID, type.request)
 				}
 				headers {
 					append(
-						HttpHeaders.Authorization, "Bearer ${craftyConfig.token}"
+						HttpHeaders.Authorization, "Bearer ${pufferConfig.token}"
 					)
 				}
 			}.body()
