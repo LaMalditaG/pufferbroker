@@ -8,7 +8,9 @@ import kotlinx.serialization.Serializable
 data class PufferControllerBrokerConfig(
 	var address: String? = null,
 	var serverID: String,
-	var token: String,
-	var pufferApiAddress: String = "https://localhost:8080",
+	// var token: String,
+	var clientID: String,
+	var clientSecret: String,
+	var pufferApiAddress: String = "http://localhost:8080",
 	var insecureMode: Boolean = false
 )

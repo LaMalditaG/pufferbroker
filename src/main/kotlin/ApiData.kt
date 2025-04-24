@@ -3,18 +3,48 @@
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+
 /**
  * Data class to hold the json response from the pufferpanel controller api
  */
 
 
+// @Serializable
+// data class TokenResponse(
+// 	@SerialName("status") var status: String,
+// 	@SerialName("data") var data: TokenData? = TokenData(),
+// 	@SerialName("error") var error: String? = null,
+// 	@SerialName("error_data") var errorData: String? = null,
+// 	@SerialName("info") var info: String? = null,
+// )
+
+@Serializable
+data class ApiResponse(
+	@SerialName("status") var status: String? = null,
+	@SerialName("running") var running: Boolean? = null,
+	@SerialName("info") var info: String? = null,
+	@SerialName("error") var error: String? = null,
+	@SerialName("error_data") var errorData: String? = null,
+)
+
+
 @Serializable
 data class ApiData(
 	@SerialName("status") var status: String,
-	@SerialName("data") var data: ServerData? = ServerData(),
+	@SerialName("running") var running: Boolean? = false,
 	@SerialName("error") var error: String? = null,
 	@SerialName("error_data") var errorData: String? = null,
 	@SerialName("info") var info: String? = null,
+)
+
+@Serializable
+data class TokenData(
+	@SerialName("access_token") var accessToken: String? = null,
+	@SerialName("token_type") var tokenType: String? = null,
+	@SerialName("scope") var scope: String? = null,
+	@SerialName("expires_in") var expiresIn: Int? = null,
 )
 
 @Serializable
@@ -72,6 +102,6 @@ data class ServerId(
 )
 
 @Serializable
-data class ServerRunning(
+data class ServerStatus(
 	@SerialName("running") var running: Boolean? = null
 )
