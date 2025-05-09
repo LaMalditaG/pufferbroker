@@ -12,5 +12,6 @@ data class PufferControllerBrokerConfig(
 	var clientID: String,
 	var clientSecret: String,
 	var pufferApiAddress: String = "http://localhost:8080",
-	var insecureMode: Boolean = false
+	var insecureMode: Boolean = false,
+	var killTimer: Int = -1
 )

@@ -33,6 +33,7 @@ class PufferControllerBroker(serverConfig: ServerConfig, private val logger: Log
 
 	private var token: String = ""
 	private var tokenExpiration: TimeMark? = null
+	private var scheduledKill: TimeMark? = null
 
 	/**
 	 * Creates a new instance and sets up the broker based on the config
@@ -88,7 +89,7 @@ class PufferControllerBroker(serverConfig: ServerConfig, private val logger: Log
 	 * @return Status type representing the server state
 	 */
 	override fun getStatus(): Status {
-		logger?.info("Getting server status")
+		// logger?.info("Getting server status")
 		updateToken()
 		val response: ApiResponse = apiRequest(RequestType.STATUS)
 
@@ -107,6 +108,13 @@ class PufferControllerBroker(serverConfig: ServerConfig, private val logger: Log
 	 * @return true if the server is running
 	 */
 	override fun isRunning(): Boolean {
+		scheduledKill?.let{
+			if(it.hasPassedNow()){
+				scheduledKill = null
+				killServer()
+			}
+		}
+
 		return getStatus() == Status.RUNNING
 	}
 
@@ -128,6 +136,18 @@ class PufferControllerBroker(serverConfig: ServerConfig, private val logger: Log
 		return Result.failure(Throwable("ERROR! Unable to delete server: ${pufferConfig.serverID}, Error message: ${response.error}"))
 	}
 
+	private fun killServer(): Result<Unit> {
+		logger?.info("Killing server")
+		updateToken()
+		val response = apiRequest(RequestType.KILL)
+		if (response.status == "ok") {
+			
+			return Result.success(Unit)
+		}
+
+		logger?.error("Unable to send kill request! Error: ${response.errorData}")
+		return Result.failure(Throwable("ERROR! Unable to stop server: ${pufferConfig.serverID}, Error message: ${response.error}"))
+	}
 
 	/**
 	 * Attempts to start the server
@@ -160,8 +180,13 @@ class PufferControllerBroker(serverConfig: ServerConfig, private val logger: Log
 		updateToken()
 		val response = apiRequest(RequestType.STOP)
 		if (response.status == "ok") {
+			if(pufferConfig.killTimer != -1){
+				scheduledKill = timeSource.markNow().plus(pufferConfig.killTimer.toDuration(DurationUnit.SECONDS))
+			}
+
 			return Result.success(Unit)
 		}
+
 		logger?.error("Unable to send stop request! Error: ${response.errorData}")
 		return Result.failure(Throwable("ERROR! Unable to stop server: ${pufferConfig.serverID}, Error message: ${response.error}"))
 	}
@@ -173,7 +198,7 @@ class PufferControllerBroker(serverConfig: ServerConfig, private val logger: Log
 	 * @return an ApiData object representing the received data
 	 */
 	private fun apiRequest(type: RequestType): ApiResponse = runBlocking {
-		logger?.debug("Trying RequestType: {}", type)
+		// logger?.debug("Trying RequestType: {}", type)
 		var response: ApiResponse = ApiResponse("ok")
 		var res: HttpResponse
 		try {
