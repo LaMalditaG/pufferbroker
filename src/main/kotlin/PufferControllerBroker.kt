@@ -16,7 +16,9 @@ import kotlinx.serialization.json.Json
 import org.slf4j.Logger
 import java.net.InetSocketAddress
 import java.net.SocketException
+import java.util.Timer
 import kotlin.time.*
+import kotlin.concurrent.timerTask
 import io.github.lamalditag.RequestType.*
 import io.github.lamalditag.*
 
@@ -33,7 +35,6 @@ class PufferControllerBroker(serverConfig: ServerConfig, private val logger: Log
 
 	private var token: String = ""
 	private var tokenExpiration: TimeMark? = null
-	private var scheduledKill: TimeMark? = null
 
 	/**
 	 * Creates a new instance and sets up the broker based on the config
@@ -108,12 +109,13 @@ class PufferControllerBroker(serverConfig: ServerConfig, private val logger: Log
 	 * @return true if the server is running
 	 */
 	override fun isRunning(): Boolean {
-		scheduledKill?.let{
-			if(it.hasPassedNow()){
-				scheduledKill = null
-				killServer()
-			}
-		}
+		// scheduledKill?.let{
+		// 	logger?.info("Elapsed ${it.elapsedNow().inWholeSeconds}")
+		// 	if(it.hasPassedNow()){
+		// 		scheduledKill = null
+		// 		killServer()
+		// 	}
+		// }
 
 		return getStatus() == Status.RUNNING
 	}
@@ -181,7 +183,13 @@ class PufferControllerBroker(serverConfig: ServerConfig, private val logger: Log
 		val response = apiRequest(RequestType.STOP)
 		if (response.status == "ok") {
 			if(pufferConfig.killTimer != -1){
-				scheduledKill = timeSource.markNow().plus(pufferConfig.killTimer.toDuration(DurationUnit.SECONDS))
+				// scheduledKill = timeSource.markNow().plus(pufferConfig.killTimer.toDuration(DurationUnit.SECONDS))
+				// logger?.info("Scheduled kill at ${scheduledKill} (current time: ${timeSource.markNow().
+				// toString()})")
+				var ms: Long = pufferConfig.killTimer.toLong()*1000
+				Timer().schedule(timerTask{
+					killServer()
+				},ms)
 			}
 
 			return Result.success(Unit)
